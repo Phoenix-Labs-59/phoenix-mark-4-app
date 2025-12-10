@@ -16,27 +16,31 @@ const app = express();
 
 // __dirname replacement for ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__filename); // [web:421][web:425]
 
 // JSON body parsing
 app.use(express.json());
 
-// Serve static files from /public
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from the repo root (Logo.png, index.html, script.js, style.css, pin.png)
+app.use(express.static(__dirname)); // [web:418][web:410]
 
-// Groq client
+// Home route – serve index.html from root
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html")); // [web:418]
+});
+
+// ---------- Groq and AssemblyAI clients ----------
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// AssemblyAI client
 const assembly = new AssemblyAI({
   apiKey: process.env.ASSEMBLYAI_API_KEY,
 });
 
 // yt-dlp / ffmpeg (yt route)
-const YTDLP_PATH = "yt-dlp"; // or "/opt/homebrew/bin/yt-dlp"
-const FFMPEG_PATH = "/opt/homebrew/bin/ffmpeg"; // kept for future use
+const YTDLP_PATH = "yt-dlp";
+const FFMPEG_PATH = "/opt/homebrew/bin/ffmpeg";
 
 // ---------- Multer for file uploads (images + pdf) ----------
 const uploadsDir = path.join(__dirname, "uploads");
@@ -65,7 +69,6 @@ function extractTextFromPdf(buffer) {
     new PdfReader.PdfReader().parseBuffer(buffer, (err, item) => {
       if (err) return reject(err);
       if (!item) {
-        // end of file
         const lines = Object.keys(rows)
           .sort((a, b) => parseFloat(a) - parseFloat(b))
           .map((y) =>
@@ -84,14 +87,7 @@ function extractTextFromPdf(buffer) {
   });
 }
 
-// ---------- Routes ----------
-
-// Home route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Chat endpoint
+// ---------- Chat endpoint ----------
 app.post("/api/chat", async (req, res) => {
   try {
     const { messages } = req.body;
@@ -124,7 +120,7 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// Helper: download best audio from YouTube with yt-dlp to a temp .webm file
+// ---------- Helper: download best audio from YouTube with yt-dlp ----------
 async function downloadAudioWithYtDlp(youtubeUrl) {
   const tmpDir = os.tmpdir();
   const outPath = path.join(tmpDir, `phoenix-${Date.now()}.webm`);
@@ -133,7 +129,7 @@ async function downloadAudioWithYtDlp(youtubeUrl) {
 
   console.log("Running yt-dlp with args:", [YTDLP_PATH, ...args]);
 
-  await execFileAsync(YTDLP_PATH, args); // yt-dlp must be installed
+  await execFileAsync(YTDLP_PATH, args);
 
   if (!fs.existsSync(outPath)) {
     throw new Error("yt-dlp did not produce audio file");
@@ -142,7 +138,7 @@ async function downloadAudioWithYtDlp(youtubeUrl) {
   return outPath;
 }
 
-// YouTube transcribe + summarize endpoint
+// ---------- YouTube transcribe + summarize endpoint ----------
 app.post("/api/youtube-transcribe", async (req, res) => {
   let audioPath = null;
 
@@ -154,11 +150,9 @@ app.post("/api/youtube-transcribe", async (req, res) => {
       return res.status(400).json({ error: "YouTube URL is required." });
     }
 
-    // 1) Download audio
     audioPath = await downloadAudioWithYtDlp(url);
     console.log("Audio downloaded to:", audioPath);
 
-    // 2) Transcribe local file using AssemblyAI convenience method
     const transcript = await assembly.transcripts.transcribe({
       audio: audioPath,
       speaker_labels: false,
@@ -178,7 +172,6 @@ app.post("/api/youtube-transcribe", async (req, res) => {
       });
     }
 
-    // 3) Trim transcript for token limit
     const MAX_CHARS = 5500;
     if (transcriptText.length > MAX_CHARS) {
       console.log(
@@ -187,7 +180,6 @@ app.post("/api/youtube-transcribe", async (req, res) => {
       transcriptText = transcriptText.slice(0, MAX_CHARS);
     }
 
-    // 4) Summarize / answer with Groq
     const userQuestion =
       question && question.trim().length > 0
         ? question.trim()
@@ -214,7 +206,6 @@ app.post("/api/youtube-transcribe", async (req, res) => {
     });
 
     const reply = completion.choices[0]?.message?.content?.trim() || "";
-    console.log("Groq reply length:", reply.length);
 
     if (!reply) {
       return res
@@ -240,10 +231,10 @@ app.post("/api/youtube-transcribe", async (req, res) => {
   }
 });
 
-// File (image/PDF) analyze route
+// ---------- File (image/PDF) analyze route ----------
 app.post(
   "/api/file-analyze",
-  fileUpload.single("file"), // field name MUST be "file"
+  fileUpload.single("file"),
   async (req, res) => {
     try {
       if (!req.file) {
@@ -253,7 +244,7 @@ app.post(
       const filePath = req.file.path;
       const mime = req.file.mimetype;
 
-      // ---------- Image flow (Groq vision) ----------
+      // Image flow
       if (mime.startsWith("image/")) {
         const question =
           req.body.question ||
@@ -263,7 +254,7 @@ app.post(
         const base64Image = imageBuffer.toString("base64");
 
         const completion = await groq.chat.completions.create({
-          model: "meta-llama/llama-4-scout-17b-16e-instruct", // vision model[web:323][web:325]
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
           messages: [
             {
               role: "user",
@@ -286,6 +277,7 @@ app.post(
         });
 
         const reply = completion.choices[0]?.message?.content?.trim() || "";
+
         if (!reply) {
           return res
             .status(500)
@@ -295,11 +287,11 @@ app.post(
         return res.json({ reply });
       }
 
-      // ---------- PDF flow (extract text + summarize with Groq) ----------
+      // PDF flow
       if (mime === "application/pdf") {
         const userQuestion =
           req.body.question ||
-          "Give a clear, concise explanation of this PDF for a JEE student.";
+          "Give a clear, concise explanation of this PDF. ";
 
         const pdfBuffer = fs.readFileSync(filePath);
         let text = await extractTextFromPdf(pdfBuffer);
@@ -307,7 +299,7 @@ app.post(
 
         if (!text) {
           return res.status(500).json({
-            error: "Could not extract any text from this PDF.",
+            error: "Couldnt Recognize text from pdf. I think I need some power. I have to reduce my screentime.",
           });
         }
 
@@ -325,7 +317,7 @@ app.post(
             {
               role: "system",
               content:
-                "You are PHOENIX MARK 4, an expert PDF explainer for JEE students. Read the extracted text from a PDF and answer the user's request in simple language. Do NOT use LaTeX; write equations in plain text like a^2 + b^2 = 10.",
+                "You are PHOENIX MARK 4, an expert PDF explainer. Read the extracted text from a PDF and answer the user's request in simple language. Do NOT use LaTeX; write equations in plain text like a^2 + b^2 = 10.",
             },
             {
               role: "user",
@@ -340,6 +332,7 @@ app.post(
         });
 
         const reply = completion.choices[0]?.message?.content?.trim() || "";
+
         if (!reply) {
           return res.status(500).json({
             error: "Empty reply from Groq for this PDF.",
@@ -351,12 +344,12 @@ app.post(
 
       return res
         .status(400)
-        .json({ error: "Only images and PDFs are supported right now." });
+        .json({ error: "Only images and PDFs are supported right now. Mail Phoenix Labs to cook somethin new 🔥" });
     } catch (err) {
       console.error("File analyze error:", err);
       return res.status(500).json({
         error:
-          "Phoenix couldn't analyze this file right now. Try another one or smaller size.",
+          "Yo buddy try a smaller sized file or try again later ",
       });
     } finally {
       if (req.file?.path) {
@@ -366,7 +359,7 @@ app.post(
   }
 );
 
-// Deployment-friendly port
+// ---------- Deployment-friendly port ----------
 const PORT = process.env.PORT || 5100;
 app.listen(PORT, () => {
   console.log(`PHOENIX MARK 4 running on port ${PORT}`);
