@@ -39,14 +39,15 @@ body {
   color: var(--text-main);
 }
 
+/* allow page scroll on small screens */
 body {
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* Root split: sidebar + main */
 .app-root {
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  width: 100%;
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
@@ -125,7 +126,7 @@ body {
 }
 
 .hero-logo-wrap {
-  width: 120px;          /* bigger logo */
+  width: 120px;
   height: 120px;
   border-radius: 999px;
   background: radial-gradient(circle at 0 0, var(--accent-soft), transparent);
@@ -147,7 +148,7 @@ body {
 
 .hero-title-main {
   display: block;
-  font-size: 36px;       /* larger title */
+  font-size: 36px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -155,7 +156,7 @@ body {
 
 .hero-title-sub {
   display: block;
-  font-size: 22px;       /* slightly larger IV */
+  font-size: 22px;
   font-weight: 500;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -349,6 +350,7 @@ body {
   transform: translateY(1px) scale(0.98);
   box-shadow: 0 8px 18px rgba(8,47,73,0.9);
 }
+
 .icon-btn {
   background: transparent;
   border: none;
@@ -364,16 +366,17 @@ body {
   height: 20px;
 }
 
-/* Mobile tweaks */
+/* Tablet tweaks */
 @media (max-width: 900px) {
   .app-root {
     grid-template-columns: 60px minmax(0, 1fr);
   }
 }
 
+/* Mobile tweaks */
 @media (max-width: 768px) {
   .app-root {
-    grid-template-columns: 0 minmax(0, 1fr);
+    grid-template-columns: 1fr;   /* no sidebar column */
   }
 
   .sidebar {
@@ -381,14 +384,41 @@ body {
   }
 
   .main {
-    padding-inline: 10px;
+    padding: 12px 10px 16px;
+  }
+
+  .hero-logo-wrap {
+    width: 90px;
+    height: 90px;
+  }
+
+  .hero-logo {
+    width: 72px;
+    height: 72px;
+  }
+
+  .hero-title-main {
+    font-size: 26px;
+    letter-spacing: 0.12em;
+  }
+
+  .hero-title-sub {
+    font-size: 16px;
+    letter-spacing: 0.2em;
   }
 
   .chat-surface {
-    border-radius: 0;
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: none;
   }
 
   .chat-box {
     padding-inline: 12px;
+  }
+
+  .message .bubble {
+    max-width: 90%;
+    font-size: 13px;
   }
 }
