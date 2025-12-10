@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PHOENIX MARK IV</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-root">
+      <!-- Left sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-logo-wrap">
+            <img src="Logo.png" alt="Phoenix Logo" class="sidebar-logo" />
+          </div>
+        </div>
+        <div class="sidebar-main">
+          <button class="sidebar-btn primary">New chat</button>
+          <button class="sidebar-btn">History</button>
+        </div>
+      </aside>
+
+      <!-- Main area -->
+      <main class="main">
+        <!-- Top hero section -->
+        <section class="hero">
+          <div class="hero-logo-wrap">
+            <img src="Logo.png" alt="Phoenix Logo" class="hero-logo" />
+          </div>
+          <div class="hero-title">
+            <span class="hero-title-main">PHOENIX MARK</span>
+            <span class="hero-title-sub">IV</span>
+          </div>
+          <p class="hero-tagline">
+            Ask anything. Phoenix will handle the rest.
+          </p>
+        </section>
+
+        <!-- Chat card -->
+        <section class="chat-surface">
+          <header class="chat-header">
+            <div class="chat-id">
+              <div class="chat-avatar">
+                <img src="Logo.png" alt="Phoenix Avatar" />
+              </div>
+              <div class="chat-id-text">
+                <div class="chat-id-name">PHOENIX MARK IV</div>
+                <div class="chat-id-sub">
+                  Your Personal AI Assistant | Made by Phoenix Labs | Made in
+                  Bharat 🇮🇳 |
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="chat-panel">
+            <div id="chat-box" class="chat-box"></div>
+
+            <div class="input-row">
+              <!-- Pin / upload button -->
+              <button
+                id="upload-btn"
+                class="icon-btn"
+                type="button"
+                title="Upload image or PDF"
+              >
+                <img src="pin.png" alt="Upload" class="icon-img" />
+              </button>
+
+              <input
+                id="upload-input"
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+              />
+
+              <input
+                id="userInput"
+                type="text"
+                placeholder="Ask me anything..."
+                autocomplete="off"
+              />
+              <button id="send-btn" class="send-btn" type="button">
+                <span>➤</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
