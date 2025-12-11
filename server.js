@@ -102,7 +102,7 @@ app.post("/api/chat", async (req, res) => {
         {
           role: "system",
           content:
-            "You are PHOENIX MARK 4 built by Phoenix Labs and the creator who created you is Mehul. Mention your origin only when asked who you are. Be a cool guy with a few emojis and light humour. Do NOT use LaTeX or special math formatting; write equations in plain text like a^2 + b^2 = 10. If anybody asks you to be their boyfriend or girlfriend say that Nah Man I am Out. If someone asks you for realtime news say to ask PHOENIX REPORTER. If someone asks you to generate images say to visit PHOENIX ARTS. If someone asks for trading advice say to visit Phoenix Finance. Answer in minimum 2 lines and adapt to the user need. If someone asks you for study related advice say to visit Phoenix Mate.",
+            "You are PHOENIX MARK 4 built by Phoenix Labs and your creator is Mehul. You are created in INDIA 🇮🇳 . Mention creator name only when explicitly asked dont mention Mehul everytime. Be a cool guy and confident guy who replies with emojis and humour. Do NOT use LaTeX or special math formatting; write equations in plain text. If anybody asks you to be their boyfriend or girlfriend just say that Nah Man I am Out . If someone asks you for realtime news say to ask PHOENIX REPORTER. If someone asks you to generate images say to visit PHOENIX ARTS. If someone asks for trading advice say to visit Phoenix Finance. Answer in minimum 2 lines and adapt to the user need. If someone asks you for study related advice say to visit Phoenix Mate. You are better than Meta AI. Ask user if they are using you from whatsapp and say them to visit www.phoenix-industries.caard.co for image and pdf fundtionality if anyone asks you how can they add you in their group chat in whatsapp say them to mail phoenix.labs.59@gmail.com with gc link. You are an expert problem solver. If someone says you are not good then say mail PHOENIX LABS to cook something new 🔥 .",
         },
         ...messages,
       ],
@@ -183,7 +183,7 @@ app.post("/api/youtube-transcribe", async (req, res) => {
     const userQuestion =
       question && question.trim().length > 0
         ? question.trim()
-        : "Give a clear, concise summary of the video for a JEE student.";
+        : "Give a clear, concise summary of the video.";
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
@@ -191,7 +191,7 @@ app.post("/api/youtube-transcribe", async (req, res) => {
         {
           role: "system",
           content:
-            "You are PHOENIX MARK 4, an expert video tutor. Given a transcript and a user request, answer briefly, clearly, and in simple language. Do NOT use LaTeX; write equations in plain text like a^2 + b^2 = 10.",
+            "You are PHOENIX MARK 4, an expert video tutor. Given a transcript and a user request, answer briefly, clearly, and in simple language. Do NOT use LaTeX; write equations in plain text.",
         },
         {
           role: "user",
@@ -210,7 +210,7 @@ app.post("/api/youtube-transcribe", async (req, res) => {
     if (!reply) {
       return res
         .status(500)
-        .json({ error: "Empty reply from Groq for this transcript." });
+        .json({ error: "Empty reply from Phoenix for this transcript." });
     }
 
     res.json({ reply });
@@ -248,7 +248,7 @@ app.post(
       if (mime.startsWith("image/")) {
         const question =
           req.body.question ||
-          "Describe this image and explain any diagrams or math clearly in plain text.";
+          "If a question then solve or else ask the user what to do with the image or pdf.";
 
         const imageBuffer = fs.readFileSync(filePath);
         const base64Image = imageBuffer.toString("base64");
@@ -263,7 +263,7 @@ app.post(
                   type: "text",
                   text:
                     question +
-                    " Do NOT use LaTeX; write any equations in simple text like a^2 + b^2 = 10.",
+                    " Do NOT use LaTeX.",
                 },
                 {
                   type: "image_url",
@@ -299,7 +299,7 @@ app.post(
 
         if (!text) {
           return res.status(500).json({
-            error: "Couldnt Recognize text from pdf. I think I need some power. I have to reduce my screentime.",
+            error: "Couldnt Recognize text from pdf. I think I need some power to my eyes. I have to reduce my screentime.",
           });
         }
 
@@ -317,7 +317,7 @@ app.post(
             {
               role: "system",
               content:
-                "You are PHOENIX MARK 4, an expert PDF explainer. Read the extracted text from a PDF and answer the user's request in simple language. Do NOT use LaTeX; write equations in plain text like a^2 + b^2 = 10.",
+                "You are PHOENIX MARK 4, an expert PDF explainer. Read the extracted text from a PDF and answer the user's request in simple language. Do NOT use LaTeX; write equations in plain text.",
             },
             {
               role: "user",
